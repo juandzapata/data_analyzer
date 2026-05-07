@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import type { AnalysisResult } from '@/lib/types'
 import { BAND_CONFIG, CRITERION_INFO, JURY_REACTIONS, scoreColor } from '@/lib/colors'
@@ -27,6 +27,30 @@ interface ResultsProps {
 export default function Results({ result, fileName, onReset }: ResultsProps) {
   const [criteriaOpen, setCriteriaOpen] = useState(false)
   const [expandedCriterion, setExpandedCriterion] = useState<string | null>(null)
+  const avatarRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [offsets, setOffsets] = useState(PROFESSORS.map(() => ({ x: 0, y: 0 })))
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      setOffsets(
+        avatarRefs.current.map((el) => {
+          if (!el) return { x: 0, y: 0 }
+          const rect = el.getBoundingClientRect()
+          const cx = rect.left + rect.width / 2
+          const cy = rect.top + rect.height / 2
+          const dx = e.clientX - cx
+          const dy = e.clientY - cy
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const factor = Math.min(dist / 200, 1)
+          return dist > 0
+            ? { x: (dx / dist) * factor * 5, y: (dy / dist) * factor * 5 }
+            : { x: 0, y: 0 }
+        })
+      )
+    }
+    window.addEventListener('mousemove', handler)
+    return () => window.removeEventListener('mousemove', handler)
+  }, [])
   const band = BAND_CONFIG[result.band]
   const finalDisplay = result.final.toFixed(1)
   const finalColor = scoreColor(result.final)
@@ -103,13 +127,21 @@ export default function Results({ result, fileName, onReset }: ResultsProps) {
                 className="flex flex-col items-center gap-3 animate-slide-up"
                 style={{ animationDelay: `${300 + i * 100}ms` }}
               >
-                <Image
-                  src={p.src}
-                  alt={`Profesor ${p.name}`}
-                  width={88}
-                  height={88}
-                  style={{ imageRendering: 'pixelated' }}
-                />
+                <div
+                  ref={(el) => { avatarRefs.current[i] = el }}
+                  style={{
+                    transform: `translate(${offsets[i].x}px, ${offsets[i].y}px)`,
+                    transition: 'transform 0.12s ease-out',
+                  }}
+                >
+                  <Image
+                    src={p.src}
+                    alt={`Profesor ${p.name}`}
+                    width={88}
+                    height={88}
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                </div>
                 <span className="font-mono text-[10px] text-brand-text-muted tracking-widest uppercase">
                   {p.name}
                 </span>

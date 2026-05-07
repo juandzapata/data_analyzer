@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
 
 const PROFESSORS = [
   { src: '/avatars/alejo.svg', name: 'Alejo' },
@@ -13,6 +14,31 @@ interface LandingProps {
 }
 
 export default function Landing({ onStart }: LandingProps) {
+  const avatarRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [offsets, setOffsets] = useState(PROFESSORS.map(() => ({ x: 0, y: 0 })))
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      setOffsets(
+        avatarRefs.current.map((el) => {
+          if (!el) return { x: 0, y: 0 }
+          const rect = el.getBoundingClientRect()
+          const cx = rect.left + rect.width / 2
+          const cy = rect.top + rect.height / 2
+          const dx = e.clientX - cx
+          const dy = e.clientY - cy
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          const factor = Math.min(dist / 200, 1)
+          return dist > 0
+            ? { x: (dx / dist) * factor * 5, y: (dy / dist) * factor * 5 }
+            : { x: 0, y: 0 }
+        })
+      )
+    }
+    window.addEventListener('mousemove', handler)
+    return () => window.removeEventListener('mousemove', handler)
+  }, [])
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-16 overflow-hidden">
       {/* Ambient background glow */}
@@ -34,13 +60,21 @@ export default function Landing({ onStart }: LandingProps) {
               className="flex flex-col items-center gap-2 animate-slide-up"
               style={{ animationDelay: `${i * 80}ms` }}
             >
-              <Image
-                src={p.src}
-                alt={`Profesor ${p.name}`}
-                width={100}
-                height={100}
-                style={{ imageRendering: 'pixelated' }}
-              />
+              <div
+                ref={(el) => { avatarRefs.current[i] = el }}
+                style={{
+                  transform: `translate(${offsets[i].x}px, ${offsets[i].y}px)`,
+                  transition: 'transform 0.12s ease-out',
+                }}
+              >
+                <Image
+                  src={p.src}
+                  alt={`Profesor ${p.name}`}
+                  width={100}
+                  height={100}
+                  style={{ imageRendering: 'pixelated' }}
+                />
+              </div>
               <span className="font-mono text-[10px] text-brand-text-muted tracking-widest uppercase">
                 {p.name}
               </span>
@@ -122,6 +156,50 @@ export default function Landing({ onStart }: LandingProps) {
         <p className="animate-slide-up delay-600 mt-8 font-mono text-[10px] text-brand-text-muted/40 tracking-widest">
           Todo el procesamiento ocurre en tu navegador · Sin servidores
         </p>
+
+        {/* Scroll cue */}
+        <div className="animate-slide-up delay-700 mt-10 flex flex-col items-center gap-1.5">
+          <span className="font-mono text-[10px] tracking-[0.25em] text-brand-text-muted/40 uppercase">
+            Busca tu dataset
+          </span>
+          <svg
+            className="text-brand-text-muted/30 animate-bounce"
+            width="20" height="20" viewBox="0 0 20 20" fill="none"
+          >
+            <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Dataset repositories — below the fold */}
+      <div className="relative z-10 w-full max-w-md mt-8 pb-16 px-4">
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { src: '/repositories/kaggle.svg',        alt: 'Kaggle',         href: 'https://kaggle.com/datasets',   desc: 'Datasets de la comunidad' },
+            { src: '/repositories/UC%20Irvine.svg',   alt: 'UC Irvine',      href: 'https://archive.ics.uci.edu',   desc: 'Repositorio académico' },
+            { src: '/repositories/datosabiertos.svg', alt: 'Datos Abiertos', href: 'https://datos.gov.co',          desc: 'Portal de datos Colombia' },
+          ].map(({ src, alt, href, desc }) => (
+            <a
+              key={alt}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col items-center justify-center gap-3 px-4 py-6 rounded-2xl border border-brand-border bg-brand-surface hover:border-brand-accent/50 hover:bg-brand-accent/5 transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <Image
+                src={src}
+                alt={alt}
+                width={110}
+                height={40}
+                className="object-contain opacity-50 group-hover:opacity-95 transition-opacity duration-200"
+                style={{ maxHeight: 36 }}
+              />
+              <span className="font-mono text-[10px] text-brand-text-muted/50 group-hover:text-brand-text-muted/80 transition-colors text-center leading-tight">
+                {desc}
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   )
