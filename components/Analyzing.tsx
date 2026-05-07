@@ -6,12 +6,12 @@ import { parseFile } from '@/lib/parse'
 import { computeStats, scoreDataset } from '@/lib/analyze'
 
 const STEPS = [
-  { id: 'read',    label: 'LEYENDO ARCHIVO',             addr: '0x0010' },
-  { id: 'types',   label: 'INFIRIENDO TIPOS',            addr: '0x0024' },
-  { id: 'nulls',   label: 'CALCULANDO COMPLETITUD',      addr: '0x0038' },
-  { id: 'dupes',   label: 'DETECTANDO DUPLICADOS',       addr: '0x004C' },
-  { id: 'score',   label: 'EVALUANDO POTENCIAL',         addr: '0x0060' },
-  { id: 'final',   label: 'CALCULANDO PUNTAJE FINAL',    addr: '0x0074' },
+  { id: 'read',  label: 'Leyendo archivo',         addr: '0x0010' },
+  { id: 'types', label: 'Infiriendo tipos',         addr: '0x0024' },
+  { id: 'nulls', label: 'Calculando completitud',   addr: '0x0038' },
+  { id: 'dupes', label: 'Detectando duplicados',    addr: '0x004C' },
+  { id: 'score', label: 'Evaluando potencial',      addr: '0x0060' },
+  { id: 'final', label: 'Calculando puntaje final', addr: '0x0074' },
 ]
 
 interface AnalyzingProps {
@@ -21,17 +21,34 @@ interface AnalyzingProps {
   onError: () => void
 }
 
+function StepBar() {
+  return (
+    <div className="flex items-center gap-2 mb-8">
+      {[1, 2, 3].map((step) => (
+        <div key={step} className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold"
+            style={{
+              background: '#f97316',
+              color: '#000',
+              border: '1px solid #f97316',
+            }}
+          >
+            {step < 3 ? '✓' : step}
+          </div>
+          {step < 3 && (
+            <div className="h-px w-8" style={{ background: '#f97316' }} />
+          )}
+        </div>
+      ))}
+      <span className="ml-1 font-mono text-xs text-brand-text-muted">Paso 3 de 3</span>
+    </div>
+  )
+}
+
 export default function Analyzing({ file, answers, onDone, onError }: AnalyzingProps) {
   const [stepIndex, setStepIndex] = useState(0)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [dots, setDots] = useState('')
-
-  useEffect(() => {
-    const dotInterval = setInterval(() => {
-      setDots((d) => d.length >= 3 ? '' : d + '.')
-    }, 300)
-    return () => clearInterval(dotInterval)
-  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -66,17 +83,20 @@ export default function Analyzing({ file, answers, onDone, onError }: AnalyzingP
   if (errorMsg) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 text-center">
-        <div className="w-full max-w-2xl border border-red-500/30 bg-red-500/5 p-8">
-          <p className="font-arcade text-3xl text-red-500 mb-4" style={{ textShadow: '0 0 12px rgba(239,68,68,0.6)' }}>
-            ERROR
-          </p>
-          <p className="font-mono text-sm text-red-400/80 mb-6">{errorMsg}</p>
+        <div className="w-full max-w-lg bg-brand-surface border border-red-500/30 rounded-2xl p-8">
+          <div className="text-4xl mb-4">⚠️</div>
+          <p className="font-mono font-bold text-red-400 text-lg mb-2">Error al procesar</p>
+          <p className="font-mono text-sm text-red-400/70 mb-6">{errorMsg}</p>
           <button
             onClick={onError}
-            className="px-8 py-3 font-arcade text-xl tracking-widest text-black bg-brand-accent hover:bg-yellow-400 transition-colors"
-            style={{ boxShadow: '0 0 16px rgba(249,115,22,0.4)' }}
+            className="font-mono font-bold text-sm px-8 py-3 rounded-xl transition-all hover:brightness-110"
+            style={{
+              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+              color: '#fff',
+              boxShadow: '0 4px 16px rgba(249,115,22,0.3)',
+            }}
           >
-            REINTENTAR
+            Reintentar
           </button>
         </div>
       </div>
@@ -87,54 +107,53 @@ export default function Analyzing({ file, answers, onDone, onError }: AnalyzingP
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Panel */}
-        <div className="border border-brand-border bg-background/80">
-          {/* Title bar */}
-          <div className="border-b border-brand-border px-4 py-2 flex items-center gap-3 bg-brand-surface/60">
-            <span
-              className="font-arcade text-xl text-brand-accent animate-glow-pulse"
-              style={{ textShadow: '0 0 8px rgba(249,115,22,0.6)' }}
-            >
-              ANALIZANDO{dots}
-            </span>
-            <span className="ml-auto font-mono text-[10px] text-brand-text-muted tracking-widest">
-              STEP 3 / 3
-            </span>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 50% 30% at 50% 0%, rgba(249,115,22,0.05) 0%, transparent 60%)',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-lg">
+        <div className="animate-slide-up">
+          <StepBar />
+        </div>
+
+        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden animate-slide-up delay-100">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-brand-border">
+            <h2 className="font-mono font-bold text-brand-text flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
+              Analizando dataset
+            </h2>
+            <p className="font-mono text-[11px] text-brand-text-muted mt-0.5 truncate max-w-[280px]">
+              {file.name} · {(file.size / 1024).toFixed(0)} KB
+            </p>
           </div>
 
-          <div className="p-8">
-            {/* File info */}
-            <div className="font-mono text-xs text-brand-text-muted mb-6 flex gap-4 flex-wrap">
-              <span className="text-brand-accent">$</span>
-              <span className="text-brand-text truncate max-w-xs">{file.name}</span>
-              <span className="text-brand-text-muted">
-                ({(file.size / 1024).toFixed(0)} KB)
-              </span>
-            </div>
-
+          <div className="p-6">
             {/* Progress bar */}
-            <div className="mb-8">
-              <div className="font-mono text-[10px] text-brand-text-muted flex justify-between mb-2">
-                <span>PROGRESO</span>
+            <div className="mb-6">
+              <div className="flex justify-between font-mono text-[10px] text-brand-text-muted mb-2">
+                <span>Progreso</span>
                 <span className="text-brand-accent">{Math.round(progress)}%</span>
               </div>
-              <div
-                className="h-2 bg-brand-surface border border-brand-border overflow-hidden"
-              >
+              <div className="h-2 bg-brand-surface-2 rounded-full overflow-hidden border border-brand-border">
                 <div
-                  className="h-full transition-all duration-300 ease-out"
+                  className="h-full rounded-full transition-all duration-300 ease-out"
                   style={{
                     width: `${progress}%`,
                     background: 'linear-gradient(90deg, #f97316, #facc15)',
-                    boxShadow: '0 0 8px rgba(249,115,22,0.6)',
+                    boxShadow: '0 0 8px rgba(249,115,22,0.5)',
                   }}
                 />
               </div>
             </div>
 
-            {/* Steps list */}
-            <div className="space-y-2 font-mono text-sm">
+            {/* Steps */}
+            <div className="space-y-3">
               {STEPS.map((step, i) => {
                 const done = i < stepIndex
                 const active = i === stepIndex
@@ -142,43 +161,36 @@ export default function Analyzing({ file, answers, onDone, onError }: AnalyzingP
                   <div
                     key={step.id}
                     className="flex items-center gap-4 transition-all duration-200"
-                    style={{
-                      opacity: done ? 0.5 : active ? 1 : 0.25,
-                    }}
+                    style={{ opacity: done ? 0.4 : active ? 1 : 0.2 }}
                   >
-                    <span className="text-brand-text-muted text-[10px] w-14 shrink-0">
+                    <span className="font-mono text-[10px] text-brand-text-muted/50 w-14 shrink-0">
                       {step.addr}
                     </span>
                     <span
-                      className="w-4 text-center"
+                      className="w-4 text-center text-sm"
                       style={{
-                        color: done ? '#22c55e' : active ? '#f97316' : '#2a2a2a',
-                        textShadow: done
-                          ? '0 0 6px rgba(34,197,94,0.6)'
-                          : active
-                          ? '0 0 6px rgba(249,115,22,0.6)'
-                          : 'none',
+                        color: done ? '#22c55e' : active ? '#f97316' : '#333',
                       }}
                     >
                       {done ? '✓' : active ? '›' : '·'}
                     </span>
                     <span
-                      className="tracking-wider text-xs"
+                      className="font-mono text-xs"
                       style={{
-                        color: done ? '#444' : active ? '#f97316' : '#333',
+                        color: done ? '#444' : active ? '#f5f5f5' : '#333',
                       }}
                     >
                       {step.label}
-                      {active && <span className="animate-blink">_</span>}
+                      {active && <span className="animate-blink ml-0.5">_</span>}
                     </span>
                   </div>
                 )
               })}
             </div>
 
-            <div className="mt-8 font-mono text-[10px] text-brand-text-muted/30 text-center tracking-widest">
-              PROCESANDO EN TU NAVEGADOR · SIN ENVÍO A SERVIDORES
-            </div>
+            <p className="mt-8 font-mono text-[10px] text-brand-text-muted/25 text-center">
+              Procesado en tu navegador · Sin envío a servidores
+            </p>
           </div>
         </div>
       </div>

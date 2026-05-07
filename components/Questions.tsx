@@ -9,6 +9,34 @@ interface QuestionsProps {
   onBack: () => void
 }
 
+function StepBar() {
+  return (
+    <div className="flex items-center gap-2 mb-8">
+      {[1, 2, 3].map((step) => (
+        <div key={step} className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold"
+            style={{
+              background: step <= 2 ? '#f97316' : '#1c1c1c',
+              color: step <= 2 ? '#000' : '#444',
+              border: `1px solid ${step <= 2 ? '#f97316' : '#2a2a2a'}`,
+            }}
+          >
+            {step < 2 ? '✓' : step}
+          </div>
+          {step < 3 && (
+            <div
+              className="h-px w-8"
+              style={{ background: step < 2 ? '#f97316' : '#2a2a2a' }}
+            />
+          )}
+        </div>
+      ))}
+      <span className="ml-1 font-mono text-xs text-brand-text-muted">Paso 2 de 3</span>
+    </div>
+  )
+}
+
 export default function Questions({ fileName, onSubmit, onBack }: QuestionsProps) {
   const [hasDoc, setHasDoc] = useState<boolean | null>(null)
   const [license, setLicense] = useState<'yes' | 'unsure' | 'no' | null>(null)
@@ -22,74 +50,74 @@ export default function Questions({ fileName, onSubmit, onBack }: QuestionsProps
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Breadcrumb */}
-        <div className="font-mono text-xs text-brand-text-muted mb-6 animate-slide-up">
-          <button onClick={onBack} className="hover:text-brand-accent transition-colors">
-            ~/analyzer/upload
-          </button>
-          <span className="text-brand-border mx-2">›</span>
-          <span className="text-brand-accent">preguntas</span>
-          <span className="animate-blink text-brand-accent">█</span>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 50% 30% at 50% 0%, rgba(249,115,22,0.05) 0%, transparent 60%)',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-lg">
+        <div className="animate-slide-up">
+          <StepBar />
         </div>
 
-        {/* Panel */}
-        <div className="border border-brand-border bg-background/80 animate-slide-up delay-100">
-          {/* Title bar */}
-          <div className="border-b border-brand-border px-4 py-2 flex items-center gap-3 bg-brand-surface/60">
-            <span className="font-arcade text-xl text-brand-accent" style={{ textShadow: '0 0 8px rgba(249,115,22,0.6)' }}>
-              INTERROGATORIO
-            </span>
-            <span className="ml-auto font-mono text-[10px] text-brand-text-muted tracking-widest">
-              STEP 2 / 3
-            </span>
+        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden animate-slide-up delay-100">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-brand-border flex items-center justify-between">
+            <div>
+              <h2 className="font-mono font-bold text-brand-text">
+                Dos preguntas rápidas
+              </h2>
+              <p className="font-mono text-[11px] text-brand-text-muted mt-0.5 truncate max-w-[240px]">
+                📄 {fileName}
+              </p>
+            </div>
+            <button
+              onClick={onBack}
+              className="font-mono text-xs text-brand-text-muted hover:text-brand-accent transition-colors px-2 py-1"
+            >
+              ← Atrás
+            </button>
           </div>
 
-          <div className="p-8 space-y-6">
-            {/* File loaded */}
-            <div className="font-mono text-xs text-brand-text-muted border border-brand-border px-4 py-2 bg-brand-surface/30">
-              <span className="text-brand-accent">$</span>{' '}
-              <span className="text-brand-text">loaded</span>{' '}
-              <span className="text-brand-highlight">&quot;{fileName}&quot;</span>
-              <span className="text-green-500 ml-2">✓ OK</span>
-            </div>
-
-            <p className="font-mono text-xs text-brand-text-muted tracking-wide">
-              El jurado necesita 2 respuestas antes de evaluar:
-            </p>
-
+          <div className="p-6 space-y-5">
             {/* Q1 */}
             <div
-              className="border border-brand-border p-5 transition-all duration-200 animate-slide-up delay-200"
+              className="rounded-xl border p-5 transition-all duration-200 animate-slide-up delay-200"
               style={{
-                borderColor: hasDoc !== null ? 'rgba(249,115,22,0.5)' : '#2a2a2a',
-                background: hasDoc !== null ? 'rgba(249,115,22,0.03)' : 'transparent',
+                borderColor: hasDoc !== null ? 'rgba(249,115,22,0.4)' : '#2a2a2a',
+                background:
+                  hasDoc !== null
+                    ? 'rgba(249,115,22,0.03)'
+                    : 'rgba(255,255,255,0.01)',
               }}
             >
-              <p className="font-mono text-sm text-brand-text mb-4">
-                <span className="text-brand-accent font-bold">Q1.</span>{' '}
+              <p className="font-mono text-sm text-brand-text mb-4 leading-relaxed">
+                <span className="text-brand-accent font-bold mr-2">Q1</span>
                 ¿Tu dataset tiene diccionario de datos o descripción?
               </p>
               <div className="flex gap-3">
                 {[
-                  { value: true, label: 'SÍ', hint: '+10 pts' },
-                  { value: false, label: 'NO', hint: '+3 pts' },
+                  { value: true, label: 'Sí', hint: '+10 pts' },
+                  { value: false, label: 'No', hint: '+3 pts' },
                 ].map(({ value, label, hint }) => (
                   <button
                     key={label}
                     onClick={() => setHasDoc(value)}
-                    className="flex-1 py-3 font-arcade text-xl tracking-widest transition-all duration-150 relative"
+                    className="flex-1 py-3 rounded-lg font-mono text-sm font-bold transition-all duration-150 relative"
                     style={{
-                      color: hasDoc === value ? '#080808' : '#888888',
+                      color: hasDoc === value ? '#000' : '#666',
                       background: hasDoc === value ? '#f97316' : 'transparent',
                       border: `1px solid ${hasDoc === value ? '#f97316' : '#2a2a2a'}`,
-                      boxShadow: hasDoc === value
-                        ? '0 0 12px rgba(249,115,22,0.4)'
-                        : 'none',
+                      boxShadow:
+                        hasDoc === value ? '0 0 16px rgba(249,115,22,0.3)' : 'none',
                     }}
                   >
                     {label}
-                    <span className="absolute bottom-1 right-2 font-mono text-[9px] opacity-50">
+                    <span className="absolute bottom-1 right-2 text-[9px] opacity-50 font-normal">
                       {hint}
                     </span>
                   </button>
@@ -99,37 +127,39 @@ export default function Questions({ fileName, onSubmit, onBack }: QuestionsProps
 
             {/* Q2 */}
             <div
-              className="border border-brand-border p-5 transition-all duration-200 animate-slide-up delay-300"
+              className="rounded-xl border p-5 transition-all duration-200 animate-slide-up delay-300"
               style={{
-                borderColor: license !== null ? 'rgba(249,115,22,0.5)' : '#2a2a2a',
-                background: license !== null ? 'rgba(249,115,22,0.03)' : 'transparent',
+                borderColor: license !== null ? 'rgba(249,115,22,0.4)' : '#2a2a2a',
+                background:
+                  license !== null
+                    ? 'rgba(249,115,22,0.03)'
+                    : 'rgba(255,255,255,0.01)',
               }}
             >
-              <p className="font-mono text-sm text-brand-text mb-4">
-                <span className="text-brand-accent font-bold">Q2.</span>{' '}
+              <p className="font-mono text-sm text-brand-text mb-4 leading-relaxed">
+                <span className="text-brand-accent font-bold mr-2">Q2</span>
                 ¿Es público y libre de datos personales sensibles (PII)?
               </p>
               <div className="flex gap-3">
                 {[
-                  { value: 'yes' as const, label: 'SÍ', hint: '+10 pts' },
-                  { value: 'unsure' as const, label: '¿?', hint: '+5 pts' },
-                  { value: 'no' as const, label: 'NO', hint: '+1 pt' },
+                  { value: 'yes' as const, label: 'Sí', hint: '+10 pts' },
+                  { value: 'unsure' as const, label: 'No sé', hint: '+5 pts' },
+                  { value: 'no' as const, label: 'No', hint: '+1 pt' },
                 ].map(({ value, label, hint }) => (
                   <button
                     key={value}
                     onClick={() => setLicense(value)}
-                    className="flex-1 py-3 font-arcade text-xl tracking-widest transition-all duration-150 relative"
+                    className="flex-1 py-3 rounded-lg font-mono text-sm font-bold transition-all duration-150 relative"
                     style={{
-                      color: license === value ? '#080808' : '#888888',
+                      color: license === value ? '#000' : '#666',
                       background: license === value ? '#f97316' : 'transparent',
                       border: `1px solid ${license === value ? '#f97316' : '#2a2a2a'}`,
-                      boxShadow: license === value
-                        ? '0 0 12px rgba(249,115,22,0.4)'
-                        : 'none',
+                      boxShadow:
+                        license === value ? '0 0 16px rgba(249,115,22,0.3)' : 'none',
                     }}
                   >
                     {label}
-                    <span className="absolute bottom-1 right-2 font-mono text-[9px] opacity-50">
+                    <span className="absolute bottom-1 right-2 text-[9px] opacity-50 font-normal">
                       {hint}
                     </span>
                   </button>
@@ -138,22 +168,22 @@ export default function Questions({ fileName, onSubmit, onBack }: QuestionsProps
             </div>
 
             {/* Submit */}
-            <div className="animate-slide-up delay-400">
-              <button
-                onClick={handleSubmit}
-                disabled={!ready}
-                className="w-full py-4 font-arcade text-2xl tracking-widest transition-all duration-150 active:scale-[0.99]"
-                style={{
-                  color: ready ? '#080808' : '#444',
-                  background: ready ? '#f97316' : '#161616',
-                  border: `1px solid ${ready ? '#f97316' : '#2a2a2a'}`,
-                  boxShadow: ready ? '0 0 20px rgba(249,115,22,0.35), 0 0 0 2px #080808, 0 0 0 3px rgba(249,115,22,0.4)' : 'none',
-                  cursor: ready ? 'pointer' : 'not-allowed',
-                }}
-              >
-                {ready ? '▸ ANALIZAR DATASET' : '···'}
-              </button>
-            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!ready}
+              className="w-full py-4 rounded-xl font-mono font-bold text-sm tracking-wide transition-all duration-150 active:scale-[0.99] animate-slide-up delay-400"
+              style={{
+                color: ready ? '#fff' : '#444',
+                background: ready
+                  ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
+                  : '#161616',
+                border: `1px solid ${ready ? 'rgba(249,115,22,0.4)' : '#2a2a2a'}`,
+                boxShadow: ready ? '0 0 20px rgba(249,115,22,0.25)' : 'none',
+                cursor: ready ? 'pointer' : 'not-allowed',
+              }}
+            >
+              {ready ? 'Analizar dataset →' : 'Responde ambas preguntas para continuar'}
+            </button>
           </div>
         </div>
       </div>

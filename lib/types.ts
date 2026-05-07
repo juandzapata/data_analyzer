@@ -16,7 +16,6 @@ export interface DatasetStats {
   duplicatePct: number
   completenessPct: number
   fileFormat: FileFormat
-  hasTargetColumn: boolean
 }
 
 export interface UserAnswers {
@@ -47,7 +46,6 @@ export type CriterionId =
   | 'duplicates'
   | 'adequate_size'
   | 'column_variety'
-  | 'target_column'
   | 'answerable_questions'
   | 'variable_relationships'
   | 'visualization_potential'

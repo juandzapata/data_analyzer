@@ -18,9 +18,6 @@ const DATE_REGEXES = [
   /^\d{4}\/\d{2}\/\d{2}$/,
 ]
 
-const TARGET_COLUMN_REGEX =
-  /^(label|target|outcome|category|class|score|result|etiqueta|objetivo|categoria|clase|resultado|output|y|prediction)$/i
-
 function isDateString(val: string): boolean {
   if (DATE_REGEXES.some((r) => r.test(val))) return true
   const d = Date.parse(val)
@@ -97,8 +94,6 @@ export function computeStats(parsed: ParsedFile): DatasetStats {
 
   const duplicatePct = computeDuplicatePct(rows)
 
-  const hasTargetColumn = headers.some((h) => TARGET_COLUMN_REGEX.test(h.trim()))
-
   return {
     rowCount: rows.length,
     columnCount: headers.length,
@@ -106,7 +101,6 @@ export function computeStats(parsed: ParsedFile): DatasetStats {
     duplicatePct,
     completenessPct,
     fileFormat: format,
-    hasTargetColumn,
   }
 }
 
@@ -206,15 +200,13 @@ const RECOMMENDATIONS: Record<CriterionId, string> = {
   duplicates:
     'Elimina filas duplicadas. En pandas: `df.drop_duplicates(inplace=True)`.',
   adequate_size:
-    'El dataset tiene pocas filas para un proyecto robusto. Busca más datos o usa técnicas de aumento de datos.',
+    'El dataset tiene pocas filas para un análisis robusto. Busca más datos o combina fuentes adicionales.',
   column_variety:
     'Añade columnas de distintos tipos (numéricas, categóricas, fechas) para enriquecer el análisis.',
-  target_column:
-    'Identifica o crea una columna objetivo clara (ej: `label`, `target`, `categoria`) para facilitar modelos de ML.',
   answerable_questions:
     'El dataset tiene pocas columnas. Añade más variables para poder formular preguntas analíticas interesantes.',
   variable_relationships:
-    'Agrega columnas numéricas para poder calcular correlaciones y construir modelos predictivos.',
+    'Agrega columnas numéricas para poder calcular correlaciones y construir modelos descriptivos.',
   visualization_potential:
     'Incluye columnas numéricas y/o categóricas para habilitar gráficas de barras, dispersión e histogramas.',
   accessible_format:
@@ -227,33 +219,31 @@ const RECOMMENDATIONS: Record<CriterionId, string> = {
 
 export function scoreDataset(stats: DatasetStats, answers: UserAnswers): AnalysisResult {
   const raw: { id: CriterionId; score: number; weight: number; dimension: string }[] = [
-    { id: 'completeness', score: scoreCompleteness(stats.completenessPct), weight: 12, dimension: 'calidad' },
-    { id: 'consistency', score: scoreConsistency(stats.columns), weight: 10, dimension: 'calidad' },
-    { id: 'duplicates', score: scoreDuplicates(stats.duplicatePct), weight: 8, dimension: 'calidad' },
-    { id: 'adequate_size', score: scoreAdequateSize(stats.rowCount), weight: 10, dimension: 'estructura' },
-    { id: 'column_variety', score: scoreColumnVariety(stats.columns), weight: 8, dimension: 'estructura' },
-    { id: 'target_column', score: stats.hasTargetColumn ? 9 : 5, weight: 7, dimension: 'estructura' },
-    { id: 'answerable_questions', score: scoreAnswerableQuestions(stats.columnCount, stats.rowCount), weight: 12, dimension: 'potencial' },
-    { id: 'variable_relationships', score: scoreVariableRelationships(stats.columns), weight: 10, dimension: 'potencial' },
-    { id: 'visualization_potential', score: scoreVisualizationPotential(stats.columns), weight: 8, dimension: 'potencial' },
-    { id: 'accessible_format', score: scoreAccessibleFormat(stats.fileFormat), weight: 5, dimension: 'practico' },
-    { id: 'documentation', score: scoreDocumentation(answers.hasDocumentation), weight: 5, dimension: 'practico' },
-    { id: 'license_ethics', score: scoreLicense(answers.licenseSafe), weight: 5, dimension: 'practico' },
+    { id: 'completeness',           score: scoreCompleteness(stats.completenessPct),              weight: 9,  dimension: 'calidad'    },
+    { id: 'consistency',            score: scoreConsistency(stats.columns),                        weight: 10, dimension: 'calidad'    },
+    { id: 'duplicates',             score: scoreDuplicates(stats.duplicatePct),                    weight: 5,  dimension: 'calidad'    },
+    { id: 'adequate_size',          score: scoreAdequateSize(stats.rowCount),                      weight: 18, dimension: 'estructura' },
+    { id: 'column_variety',         score: scoreColumnVariety(stats.columns),                      weight: 8,  dimension: 'estructura' },
+    { id: 'answerable_questions',   score: scoreAnswerableQuestions(stats.columnCount, stats.rowCount), weight: 14, dimension: 'potencial'  },
+    { id: 'variable_relationships', score: scoreVariableRelationships(stats.columns),              weight: 10, dimension: 'potencial'  },
+    { id: 'visualization_potential',score: scoreVisualizationPotential(stats.columns),             weight: 8,  dimension: 'potencial'  },
+    { id: 'accessible_format',      score: scoreAccessibleFormat(stats.fileFormat),                weight: 5,  dimension: 'practico'   },
+    { id: 'documentation',          score: scoreDocumentation(answers.hasDocumentation),           weight: 8,  dimension: 'practico'   },
+    { id: 'license_ethics',         score: scoreLicense(answers.licenseSafe),                      weight: 5,  dimension: 'practico'   },
   ]
 
   const CRITERION_LABELS: Record<CriterionId, string> = {
-    completeness: 'Completitud',
-    consistency: 'Consistencia',
-    duplicates: 'Duplicados',
-    adequate_size: 'Tamaño adecuado',
-    column_variety: 'Variedad de columnas',
-    target_column: 'Columna objetivo',
-    answerable_questions: 'Preguntas respondibles',
+    completeness:           'Completitud',
+    consistency:            'Consistencia',
+    duplicates:             'Duplicados',
+    adequate_size:          'Tamaño adecuado',
+    column_variety:         'Variedad de columnas',
+    answerable_questions:   'Preguntas respondibles',
     variable_relationships: 'Relaciones entre variables',
-    visualization_potential: 'Potencial de visualización',
-    accessible_format: 'Formato accesible',
-    documentation: 'Documentación',
-    license_ethics: 'Licencia y ética',
+    visualization_potential:'Potencial de visualización',
+    accessible_format:      'Formato accesible',
+    documentation:          'Documentación',
+    license_ethics:         'Licencia y ética',
   }
 
   const criteria: CriterionScore[] = raw.map((r) => ({
@@ -265,10 +255,10 @@ export function scoreDataset(stats: DatasetStats, answers: UserAnswers): Analysi
   }))
 
   const DIMENSION_META: { id: string; label: string; weight: number }[] = [
-    { id: 'calidad', label: 'Calidad de datos', weight: 30 },
-    { id: 'estructura', label: 'Estructura', weight: 25 },
-    { id: 'potencial', label: 'Potencial analítico', weight: 30 },
-    { id: 'practico', label: 'Aspectos prácticos', weight: 15 },
+    { id: 'calidad',    label: 'Calidad de datos',    weight: 24 },
+    { id: 'estructura', label: 'Estructura',           weight: 26 },
+    { id: 'potencial',  label: 'Potencial analítico',  weight: 32 },
+    { id: 'practico',   label: 'Aspectos prácticos',   weight: 18 },
   ]
 
   const dimensions: DimensionScore[] = DIMENSION_META.map(({ id, label, weight }) => {

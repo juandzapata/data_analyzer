@@ -15,7 +15,7 @@
   --brand-text: #f0f0f0;
   --brand-text-muted: #888888;
 
-  --background: #080808;
+  --background: #0d0d0d;
   --foreground: #f0f0f0;
   --card: #111111;
   --card-foreground: #f0f0f0;
@@ -33,7 +33,7 @@
   --border: #2a2a2a;
   --input: #2a2a2a;
   --ring: #f97316;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
   --chart-1: #f97316;
   --chart-2: #facc15;
   --chart-3: #ef4444;
@@ -90,8 +90,7 @@
 
   /* Fonts */
   --font-mono: var(--font-geist-mono);
-  --font-sans: var(--font-geist-mono); /* everything mono for terminal feel */
-  --font-arcade: var(--font-vt323);
+  --font-sans: var(--font-geist-mono);
 
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
@@ -108,13 +107,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-geist-mono), 'Courier New', monospace;
-    /* Subtle dot-grid background */
-    background-image: radial-gradient(
-      circle,
-      rgba(249, 115, 22, 0.06) 1px,
-      transparent 1px
-    );
-    background-size: 28px 28px;
   }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--background); }

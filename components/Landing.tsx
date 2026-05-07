@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 
 const PROFESSORS = [
@@ -12,155 +14,114 @@ interface LandingProps {
 
 export default function Landing({ onStart }: LandingProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 overflow-hidden">
-      {/* Top bar — terminal chrome */}
-      <div className="animate-slide-up w-full max-w-2xl mb-8">
-        <div className="flex items-center gap-2 px-4 py-2 bg-brand-surface border-t border-x border-brand-border text-brand-text-muted text-xs font-mono">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500 opacity-70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 opacity-70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500 opacity-70" />
-          <span className="ml-3 flex-1 text-center tracking-widest opacity-50">
-            DATASET_ANALYZER — v1.0.0
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-16 overflow-hidden">
+      {/* Ambient background glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 50% at 50% -10%, rgba(249,115,22,0.1) 0%, transparent 65%)',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-md text-center">
+        {/* Professor avatars */}
+        <div className="flex justify-center gap-8 mb-10">
+          {PROFESSORS.map((p, i) => (
+            <div
+              key={p.name}
+              className="flex flex-col items-center gap-2 animate-slide-up"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <Image
+                src={p.src}
+                alt={`Profesor ${p.name}`}
+                width={100}
+                height={100}
+                style={{ imageRendering: 'pixelated' }}
+              />
+              <span className="font-mono text-[10px] text-brand-text-muted tracking-widest uppercase">
+                {p.name}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bootcamp badge */}
+        <div className="animate-slide-up delay-100 mb-5">
+          <span className="inline-block font-mono text-[10px] tracking-[0.3em] uppercase text-brand-accent bg-brand-accent/10 border border-brand-accent/20 px-3 py-1 rounded-full">
+            Bootcamp Tool
           </span>
         </div>
-      </div>
 
-      {/* Main terminal panel */}
-      <div className="animate-slide-up delay-100 w-full max-w-2xl border border-brand-border bg-background/80 backdrop-blur-sm">
-        {/* Header with professors */}
-        <div className="border-b border-brand-border px-8 py-6 bg-brand-surface/40">
-          <div className="flex justify-center gap-10">
-            {PROFESSORS.map((p, i) => (
-              <div
-                key={p.name}
-                className="flex flex-col items-center gap-3 animate-slide-up"
-                style={{ animationDelay: `${200 + i * 120}ms` }}
-              >
-                <div className="relative">
-                  {/* Pixel frame — outer glow */}
-                  <div
-                    className="w-20 h-20 bg-brand-surface-2 overflow-hidden"
-                    style={{
-                      boxShadow:
-                        '0 0 0 1px #f97316, 0 0 0 4px #080808, 0 0 0 5px rgba(249,115,22,0.3), 0 0 12px rgba(249,115,22,0.15)',
-                    }}
-                  >
-                    <Image
-                      src={p.src}
-                      alt={`Profesor ${p.name}`}
-                      width={80}
-                      height={80}
-                      className="object-contain w-full h-full"
-                      style={{ imageRendering: 'pixelated' }}
-                    />
-                  </div>
-                  {/* Online indicator */}
-                  <span
-                    className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500"
-                    style={{ boxShadow: '0 0 6px rgba(34,197,94,0.8)' }}
-                  />
-                </div>
-                <span className="font-mono text-xs text-brand-text-muted tracking-widest uppercase">
-                  {p.name}
-                </span>
-              </div>
-            ))}
-          </div>
+        {/* Title */}
+        <div className="animate-slide-up delay-200 mb-3">
+          <h1
+            className="font-mono font-bold leading-tight"
+            style={{ fontSize: 'clamp(2.2rem, 7vw, 3.5rem)' }}
+          >
+            <span
+              style={{
+                background: 'linear-gradient(135deg, #f97316 20%, #facc15 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Dataset
+            </span>{' '}
+            <span className="text-brand-text">Analyzer</span>
+          </h1>
         </div>
 
-        {/* Content */}
-        <div className="px-8 py-10 text-center">
-          {/* Title */}
-          <div className="animate-slide-up delay-300 mb-2">
-            <div className="text-brand-text-muted text-xs tracking-[0.4em] uppercase font-mono mb-3">
-              ▸ Bootcamp Tool ◂
+        {/* Subtitle */}
+        <p className="animate-slide-up delay-300 font-mono text-brand-text-muted text-sm leading-relaxed max-w-xs mx-auto mb-10">
+          Sube tu dataset y recibe un puntaje de viabilidad basado en 12
+          criterios de calidad de datos.
+        </p>
+
+        {/* Stats pills */}
+        <div className="animate-slide-up delay-400 flex justify-center gap-3 mb-10 flex-wrap">
+          {[
+            { value: '12', label: 'Criterios' },
+            { value: '4', label: 'Dimensiones' },
+            { value: '1–10', label: 'Puntaje' },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="px-5 py-3 bg-brand-surface border border-brand-border rounded-xl text-center min-w-[80px]"
+            >
+              <div className="font-mono font-bold text-brand-accent text-lg leading-none">
+                {s.value}
+              </div>
+              <div className="font-mono text-[10px] text-brand-text-muted tracking-wide mt-1">
+                {s.label}
+              </div>
             </div>
-            <h1
-              className="font-arcade text-6xl sm:text-7xl leading-none animate-flicker"
-              style={{
-                color: '#f97316',
-                textShadow:
-                  '0 0 10px rgba(249,115,22,0.8), 0 0 24px rgba(249,115,22,0.4), 0 0 48px rgba(249,115,22,0.2)',
-              }}
-            >
-              DATASET
-            </h1>
-            <h1
-              className="font-arcade text-6xl sm:text-7xl leading-none"
-              style={{
-                color: '#facc15',
-                textShadow:
-                  '0 0 10px rgba(250,204,21,0.7), 0 0 24px rgba(250,204,21,0.4)',
-              }}
-            >
-              ANALYZER
-            </h1>
-          </div>
-
-          <div className="animate-slide-up delay-400 my-6 text-brand-text-muted text-xs tracking-widest">
-            ── ── ── ── ── ── ── ── ── ── ──
-          </div>
-
-          <p className="animate-slide-up delay-500 font-mono text-brand-text-muted text-sm max-w-sm mx-auto mb-2 leading-relaxed">
-            Sube tu dataset. Obtendrás un puntaje automático basado en 12 criterios de calidad de datos.
-          </p>
-
-          {/* Stats row */}
-          <div className="animate-slide-up delay-600 flex justify-center gap-8 my-8">
-            {[
-              { value: '12', label: 'CRITERIOS' },
-              { value: '04', label: 'DIMS' },
-              { value: '1-10', label: 'SCORE' },
-            ].map((s) => (
-              <div key={s.label} className="flex flex-col items-center">
-                <span
-                  className="font-arcade text-3xl"
-                  style={{
-                    color: '#f97316',
-                    textShadow: '0 0 8px rgba(249,115,22,0.6)',
-                  }}
-                >
-                  {s.value}
-                </span>
-                <span className="font-mono text-[10px] tracking-widest text-brand-text-muted mt-1">
-                  {s.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="animate-slide-up delay-700">
-            <button
-              onClick={onStart}
-              className="group relative px-10 py-3 font-arcade text-2xl tracking-widest transition-all duration-150 active:scale-95"
-              style={{
-                color: '#080808',
-                background: '#f97316',
-                boxShadow: '0 0 0 2px #080808, 0 0 0 3px #f97316, 0 4px 20px rgba(249,115,22,0.4)',
-              }}
-            >
-              <span className="relative z-10">INICIAR</span>
-              <span
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                style={{
-                  background: 'rgba(250,204,21,0.15)',
-                }}
-              />
-            </button>
-
-            <p className="mt-4 font-mono text-[10px] tracking-[0.3em] text-brand-text-muted animate-blink">
-              ▸ PRESIONA PARA COMENZAR ◂
-            </p>
-          </div>
+          ))}
         </div>
 
-        {/* Footer bar */}
-        <div className="border-t border-brand-border px-6 py-2 flex justify-between text-[10px] font-mono text-brand-text-muted/40 tracking-widest bg-brand-surface/20">
-          <span>©2025 BOOTCAMP</span>
-          <span>ALL FILES PROCESSED LOCALLY</span>
-          <span>NO SERVER</span>
+        {/* CTA button */}
+        <div className="animate-slide-up delay-500">
+          <button
+            onClick={onStart}
+            className="font-mono font-bold text-sm px-10 py-3.5 rounded-xl tracking-wide transition-all duration-200 active:scale-95 hover:brightness-110"
+            style={{
+              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+              color: '#fff',
+              boxShadow:
+                '0 0 0 1px rgba(249,115,22,0.3), 0 4px 20px rgba(249,115,22,0.35)',
+            }}
+          >
+            Comenzar análisis →
+          </button>
         </div>
+
+        {/* Privacy note */}
+        <p className="animate-slide-up delay-600 mt-8 font-mono text-[10px] text-brand-text-muted/40 tracking-widest">
+          Todo el procesamiento ocurre en tu navegador · Sin servidores
+        </p>
       </div>
     </div>
   )
